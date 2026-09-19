@@ -1,6 +1,7 @@
 import model.Cliente;
 import model.Intencao;
 import service.ChatService;
+import service.IntencaoService;
 
 import java.util.List;
 import java.util.Scanner;
@@ -9,63 +10,41 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         ChatService chatService = new ChatService();
+        IntencaoService intencaoService = new IntencaoService();
 
         boolean continuar = true;
         while (continuar) {
             System.out.print("\nMensagem: ");
             String mensagem = sc.nextLine().toLowerCase();
 
-            if (mensagem.equals("sair") || mensagem.contains("tchau") || mensagem.contains("flw")) {
-                continuar =  false;
-                break;
-            }
+            Intencao intencao = intencaoService.identificadorIntencao(mensagem);
 
-            boolean encontrou = false;
-
-            if (mensagem.contains("preço") || mensagem.contains("preco") || mensagem.contains("valor") || mensagem.contains("custa")) {
-                System.out.println(responderPreco());
-                encontrou = true;
-            }
-            if (mensagem.contains("horário") || mensagem.contains("horario")) {
-                System.out.println(responderHorario());
-                encontrou = true;
-            }
-            if (mensagem.contains("endereço") || mensagem.contains("localização") || mensagem.contains("local")) {
-                System.out.println(responderEndereco());
-                encontrou = true;
-            }
-            if (mensagem.contains("reservar") || mensagem.contains("reserva")) {
-                responderReserva(sc, chatService);
-                encontrou = true;
-            }
-            if (mensagem.contains("cancelar") || mensagem.contains("cancelamento")) {
-                responderCancelamento(sc, chatService);
-                encontrou = true;
-            }
-            if (mensagem.contains("ver") || mensagem.contains("consultar")) {
-                verReserva(sc, chatService);
-                encontrou = true;
-            }
-            if (!encontrou) {
-                System.out.println("Não entendi....");
+            switch (intencao) {
+                case CANCELAR_RESERVA -> responderCancelamento(sc, chatService);
+                case CONSULTAR_RESERVA -> verReserva(sc, chatService);
+                case RESERVAR -> responderReserva(sc, chatService);
+                case PRECO -> responderPreco();
+                case HORARIO -> responderHorario();
+                case ENDERECO -> responderEndereco();
+                case DESCONHECIDO -> System.out.println("Não entendi, por favor repita sua pergunta!!");
             }
         }
         sc.close();
     }
 
-    public static String responderPreco() {
-        return "Pizza G R$36.00\n" +
+    public static void responderPreco() {
+        System.out.println("Pizza G R$36.00\n" +
                 "Pizza M R$26.00\n" +
-                "Pizza Extra Grande R$40.00";
+                "Pizza Extra Grande R$40.00");
     }
 
-    public static String responderHorario() {
-        return "Segundas a Sexta das 18h as 00h\n" +
-                "Sabados e Domingos 18h as 1h";
+    public static void responderHorario() {
+        System.out.println("Segundas a Sexta das 18h as 00h\n" +
+                "Sabados e Domingos 18h as 1h");
     }
 
-    public static String responderEndereco() {
-        return "Rua Apóstolo Matheus, Santa Etelvina, 245";
+    public static void responderEndereco() {
+        System.out.println("Rua Apóstolo Matheus, Santa Etelvina, 245");
     }
 
     public static void responderReserva(Scanner sc, ChatService service) {
@@ -102,17 +81,9 @@ public class Main {
         if (clientes.isEmpty()) {
             System.out.println("Reserva nenhuma reserva encontrada nesse nome!");
         } else {
-            clientes.forEach(System.out::println);
+           for (Cliente cliente : clientes) {
+               System.out.println(cliente.toString());
+           }
         }
-    }
-
-    public Intencao identificarIntencao(String mensagem) {
-        if (mensagem.contains("cancelar") || mensagem.contains())
-            return Intencao.CANCELAR_RESERVA;
-
-        if (mensagem.contains("preço") || mensagem.contains("valor") || mensagem.contains("custa"))
-            return Intencao.PRECO;
-
-        return Intencao.DESCONHECIDO;
     }
 }

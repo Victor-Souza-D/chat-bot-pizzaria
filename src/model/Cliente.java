@@ -35,4 +35,13 @@ public class Cliente {
     public void setQtdPessoas(int qtdPessoas) {
         this.qtdPessoas = qtdPessoas;
     }
+
+    @Override
+    public String toString() {
+        return "Nome: " + getNome() +
+                "\nHorário: " + getHorario() +
+                "\nQuantidade de pessoas: " + getQtdPessoas();
+    }
 }
+
+
