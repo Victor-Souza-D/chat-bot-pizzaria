@@ -3,7 +3,6 @@ import model.Intencao;
 import service.ChatService;
 import service.IntencaoService;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -19,9 +18,8 @@ public class Main {
         ChatService chatService = new ChatService();
         IntencaoService intencaoService = new IntencaoService();
 
-        boolean continuar = true;
-        while (continuar) {
-            System.out.print("\nMensagem: ");
+        while (true) {
+            IO.print("\nMensagem: ");
             String mensagem = sc.nextLine().toLowerCase();
 
             Intencao intencao = intencaoService.identificadorIntencao(mensagem);
@@ -33,100 +31,119 @@ public class Main {
                 case PRECO -> responderPreco();
                 case HORARIO -> responderHorario();
                 case ENDERECO -> responderEndereco();
-                case DESCONHECIDO -> System.out.println("Não entendi, por favor repita sua pergunta!!");
+                case DESCONHECIDO -> IO.println("Não entendi, por favor repita sua pergunta!!");
             }
+            sc.close();
         }
-        sc.close();
     }
 
     public static void responderPreco() {
-        System.out.println("Pizza G R$36.00\n" +
-                "Pizza M R$26.00\n" +
-                "Pizza Extra Grande R$40.00");
+        IO.println("""
+                Pizza G R$36.00
+                Pizza M R$26.00
+                Pizza Extra Grande R$40.00""");
     }
 
     public static void responderHorario() {
-        System.out.println("Segundas a Sexta das 18h as 00h\n" +
+        IO.println("Segundas a Sexta das 18h as 00h\n" +
                 "Sabados e Domingos 18h as 1h");
     }
 
     public static void responderEndereco() {
-        System.out.println("Rua Apóstolo Matheus, Santa Etelvina, 245");
+        IO.println("Rua Apóstolo Matheus, Santa Etelvina, 245");
     }
 
     public static void responderReserva(Scanner sc, ChatService service) {
-        System.out.print("Seu Nome: ");
+        IO.print("Seu Nome: ");
         String nomeCliente = sc.nextLine();
 
         LocalDate dia;
         while (true) {
-            System.out.print("Dia da Reserva: ");
+            IO.print("Dia da Reserva: ");
             try {
                 dia = LocalDate.parse(sc.nextLine());
                 if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
-                    System.out.println("Fim de Semana");
+                    IO.println("Fim de Semana");
                 } else {
-                    System.out.println("Dia da Semana");
+                    IO.println("Dia da Semana");
                 }
                 break;
             } catch (DateTimeParseException e) {
-                System.out.println("Dia incorreto!");
+                IO.println("Dia incorreto!");
             }
         }
 
         LocalTime horarioCliente;
         while (true) {
-            System.out.print("Qual o Horário: ");
+            IO.print("Qual o Horário: ");
             try {
                 horarioCliente = LocalTime.parse(sc.nextLine());
-                break;
+
+                LocalTime horarioAbertura = LocalTime.of(18, 0);
+                LocalTime horarioFechamento = LocalTime.of(1, 0);
+
+                if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
+                    if (horarioCliente.equals(horarioAbertura) || horarioCliente.isAfter(horarioAbertura)
+                            || horarioCliente.isBefore(horarioFechamento)) {
+                        System.out.print("valido");
+                        break;
+                    } else {
+                        System.out.println("invalido"); }
+                } else {
+                    if (horarioCliente.isAfter(horarioAbertura) || horarioCliente.equals(horarioAbertura)){
+                        System.out.print("valido");
+                        break;
+                    } else {
+                        System.out.println("invalido");
+                    }
+                }
             } catch (DateTimeParseException ex) {
-                System.out.println("Formato de horario incorreto!");
+                IO.println("Formato de horario incorreto!");
             }
         }
 
-        int qtdPessoas = 0;
+        int qtdPessoas =0 ;
         while (true) {
-            System.out.print("Quantas Pessoas: ");
+            IO.print("Quantas Pessoas: ");
             try {
                 qtdPessoas = Integer.parseInt(sc.nextLine());
                 if (qtdPessoas > 0) {
-                    System.out.println("Dados validos!!");
+                    IO.println("Dados validos!!");
                     break;
                 } else {
-                    System.out.println("Numero invalido \n");
+                    IO.println("Numero invalido \n");
                 }
-            } catch(NumberFormatException e){
-                System.out.println("Digite apenas numero");
+            } catch (NumberFormatException e) {
+                IO.println("Digite apenas numero");
             }
         }
-        Cliente cliente = new Cliente(nomeCliente, dia,  horarioCliente, qtdPessoas);
+        Cliente cliente = new Cliente(nomeCliente, dia, horarioCliente, qtdPessoas);
         service.adicionarCliente(cliente);
     }
 
     public static void responderCancelamento(Scanner sc, ChatService chatService) {
-        System.out.print("Nome da Reserva: ");
+        IO.print("Nome da Reserva: ");
         String nomeCliente = sc.nextLine();
 
         boolean removido = chatService.removerReserva(nomeCliente);
         if (removido) {
-            System.out.println("Cancelamento feito com sucesso!!");
+            IO.println("Cancelamento feito com sucesso!!");
         } else {
-            System.out.println("Não encontrei uma reserva com esse nome!");
+            IO.println("Não encontrei uma reserva com esse nome!");
         }
     }
 
     public static void verReserva(Scanner sc, ChatService chatService) {
-        System.out.print("Nome da Reserva: ");
+        IO.print("Nome da Reserva: ");
         String nomeCliente = sc.nextLine();
 
         List<Cliente> clientes = chatService.buscarPorNome(nomeCliente);
         if (clientes.isEmpty()) {
-            System.out.println("Reserva nenhuma reserva encontrada nesse nome!");
+            IO.println("Reserva nenhuma reserva encontrada nesse nome!");
         } else {
-           for (Cliente cliente : clientes) {
-               System.out.println(cliente.toString());
-           }
+            for (Cliente cliente : clientes) {
+                IO.println(cliente.toString());
+            }
         }
     }
 }

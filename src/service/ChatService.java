@@ -19,7 +19,7 @@ public class ChatService {
     }
 
     public boolean removerReserva(String nomeCliente) {
-        boolean removido = clientes.removeIf(cliente -> cliente.getNome().equals(nomeCliente));
-        return removido;
+        boolean remover =  clientes.removeIf(cliente -> cliente.getNome().equals(nomeCliente));
+        return remover;
     }
 }
