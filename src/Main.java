@@ -1,6 +1,7 @@
 import model.Cliente;
 import model.Intencao;
 import service.ChatService;
+import service.HorarioService;
 import service.IntencaoService;
 
 import java.time.LocalDate;
@@ -17,23 +18,27 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         ChatService chatService = new ChatService();
         IntencaoService intencaoService = new IntencaoService();
+        HorarioService horarioService = new HorarioService();
 
         while (true) {
             IO.print("\nMensagem: ");
-            String mensagem = sc.nextLine().toLowerCase();
+            try {
+                String mensagem = sc.nextLine().toLowerCase();
 
-            Intencao intencao = intencaoService.identificadorIntencao(mensagem);
+                Intencao intencao = intencaoService.identificadorIntencao(mensagem);
 
-            switch (intencao) {
-                case CANCELAR_RESERVA -> responderCancelamento(sc, chatService);
-                case CONSULTAR_RESERVA -> verReserva(sc, chatService);
-                case RESERVAR -> responderReserva(sc, chatService);
-                case PRECO -> responderPreco();
-                case HORARIO -> responderHorario();
-                case ENDERECO -> responderEndereco();
-                case DESCONHECIDO -> IO.println("Não entendi, por favor repita sua pergunta!!");
+                switch (intencao) {
+                    case CANCELAR_RESERVA -> responderCancelamento(sc, chatService);
+                    case CONSULTAR_RESERVA -> verReserva(sc, chatService);
+                    case RESERVAR -> responderReserva(sc, chatService, horarioService);
+                    case PRECO -> responderPreco();
+                    case HORARIO -> responderHorario();
+                    case ENDERECO -> responderEndereco();
+                    case DESCONHECIDO -> IO.println("Não entendi, por favor repita sua pergunta!!");
+                }
+            } catch (RuntimeException e) {
+                System.out.println(e.getMessage());
             }
-            sc.close();
         }
     }
 
@@ -53,7 +58,7 @@ public class Main {
         IO.println("Rua Apóstolo Matheus, Santa Etelvina, 245");
     }
 
-    public static void responderReserva(Scanner sc, ChatService service) {
+    public static void responderReserva(Scanner sc, ChatService service, HorarioService horarioService) {
         IO.print("Seu Nome: ");
         String nomeCliente = sc.nextLine();
 
@@ -62,12 +67,17 @@ public class Main {
             IO.print("Dia da Reserva: ");
             try {
                 dia = LocalDate.parse(sc.nextLine());
-                if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
-                    IO.println("Fim de Semana");
+                if (dia.isBefore(LocalDate.now())) {
+                    IO.print("Data invalida");
                 } else {
-                    IO.println("Dia da Semana");
+                    if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
+                        System.out.print("Fim de semana");
+                        break;
+                    } else {
+                        IO.println("Dia da Semana");
+                        break;
+                    }
                 }
-                break;
             } catch (DateTimeParseException e) {
                 IO.println("Dia incorreto!");
             }
@@ -79,30 +89,18 @@ public class Main {
             try {
                 horarioCliente = LocalTime.parse(sc.nextLine());
 
-                LocalTime horarioAbertura = LocalTime.of(18, 0);
-                LocalTime horarioFechamento = LocalTime.of(1, 0);
-
-                if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
-                    if (horarioCliente.equals(horarioAbertura) || horarioCliente.isAfter(horarioAbertura)
-                            || horarioCliente.isBefore(horarioFechamento)) {
-                        System.out.print("valido");
-                        break;
-                    } else {
-                        System.out.println("invalido"); }
+                boolean valido =  horarioService.horarioValido(dia, horarioCliente);
+                if (valido) {
+                    break;
                 } else {
-                    if (horarioCliente.isAfter(horarioAbertura) || horarioCliente.equals(horarioAbertura)){
-                        System.out.print("valido");
-                        break;
-                    } else {
-                        System.out.println("invalido");
-                    }
+                    IO.println("Horário invalido");
                 }
             } catch (DateTimeParseException ex) {
                 IO.println("Formato de horario incorreto!");
             }
         }
 
-        int qtdPessoas =0 ;
+        int qtdPessoas = 0 ;
         while (true) {
             IO.print("Quantas Pessoas: ");
             try {
@@ -117,6 +115,7 @@ public class Main {
                 IO.println("Digite apenas numero");
             }
         }
+
         Cliente cliente = new Cliente(nomeCliente, dia, horarioCliente, qtdPessoas);
         service.adicionarCliente(cliente);
     }
