@@ -51,7 +51,8 @@ public class Cliente {
 
     @Override
     public String toString() {
-        return "Nome: " + getNome() +
+        return "==+== SUA RESERVA ==+==" +
+                "\nNome: " + getNome() +
                 "\nDia: " + getDia() +
                 "\nHorário: " + getHorario() +
                 "\nQuantidade de pessoas: " + getQtdPessoas();

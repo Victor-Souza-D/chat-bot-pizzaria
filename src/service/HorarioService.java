@@ -17,11 +17,11 @@ public class HorarioService {
                 return false;
             }
         } else {
-                if (horarioCliente.equals(horarioAbertura) || horarioCliente.isAfter(horarioAbertura)) {
-                    return true;
-                } else {
-                    return false;
-                }
+            if (horarioCliente.equals(horarioAbertura) || horarioCliente.isAfter(horarioAbertura)) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

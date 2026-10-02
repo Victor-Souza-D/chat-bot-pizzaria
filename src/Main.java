@@ -59,8 +59,17 @@ public class Main {
     }
 
     public static void responderReserva(Scanner sc, ChatService service, HorarioService horarioService) {
-        IO.print("Seu Nome: ");
-        String nomeCliente = sc.nextLine();
+        String nomeCliente;
+        while (true) {
+            System.out.print("Nome: ");
+            nomeCliente = sc.nextLine();
+
+            if (nomeCliente.equals("")) {
+                System.out.println("O seu nome deve ter pelo menos um nome.");
+            } else {
+                break;
+            }
+        }
 
         LocalDate dia;
         while (true) {
@@ -68,13 +77,11 @@ public class Main {
             try {
                 dia = LocalDate.parse(sc.nextLine());
                 if (dia.isBefore(LocalDate.now())) {
-                    IO.print("Data invalida");
+                    IO.println("Data invalida");
                 } else {
                     if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
-                        System.out.print("Fim de semana");
                         break;
                     } else {
-                        IO.println("Dia da Semana");
                         break;
                     }
                 }
@@ -91,10 +98,17 @@ public class Main {
 
                 boolean valido =  horarioService.horarioValido(dia, horarioCliente);
                 if (valido) {
-                    break;
                 } else {
                     IO.println("Horário invalido");
+                    continue;
                 }
+
+                boolean existeAgendamento = service.existeAgendamento(dia, horarioCliente);
+                if (existeAgendamento) {
+                    System.out.println("Horário já existente... Por favor coloque outro horário!!");
+                    continue;
+                }
+                break;
             } catch (DateTimeParseException ex) {
                 IO.println("Formato de horario incorreto!");
             }
@@ -124,8 +138,8 @@ public class Main {
         IO.print("Nome da Reserva: ");
         String nomeCliente = sc.nextLine();
 
-        boolean removido = chatService.removerReserva(nomeCliente);
-        if (removido) {
+        boolean cancelar = chatService.removerReserva(nomeCliente);
+        if (cancelar) {
             IO.println("Cancelamento feito com sucesso!!");
         } else {
             IO.println("Não encontrei uma reserva com esse nome!");
