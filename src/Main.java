@@ -7,6 +7,7 @@ import service.IntencaoService;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -64,7 +65,7 @@ public class Main {
             System.out.print("Nome: ");
             nomeCliente = sc.nextLine();
 
-            if (nomeCliente.equals("")) {
+            if (nomeCliente.trim().isEmpty()) {
                 System.out.println("O seu nome deve ter pelo menos um nome.");
             } else {
                 break;
@@ -80,7 +81,7 @@ public class Main {
                     IO.println("Data invalida");
                 } else {
                     if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
-                        break;
+                        System.out.println("Data invalida");
                     } else {
                         break;
                     }
@@ -96,8 +97,9 @@ public class Main {
             try {
                 horarioCliente = LocalTime.parse(sc.nextLine());
 
-                boolean valido =  horarioService.horarioValido(dia, horarioCliente);
+                boolean valido = horarioService.horarioValido(dia, horarioCliente);
                 if (valido) {
+
                 } else {
                     IO.println("Horário invalido");
                     continue;
@@ -114,7 +116,7 @@ public class Main {
             }
         }
 
-        int qtdPessoas = 0 ;
+        int qtdPessoas = 0;
         while (true) {
             IO.print("Quantas Pessoas: ");
             try {
@@ -132,17 +134,40 @@ public class Main {
 
         Cliente cliente = new Cliente(nomeCliente, dia, horarioCliente, qtdPessoas);
         service.adicionarCliente(cliente);
+        System.out.println("Cliente adicionado com sucesso!");
     }
 
     public static void responderCancelamento(Scanner sc, ChatService chatService) {
-        IO.print("Nome da Reserva: ");
-        String nomeCliente = sc.nextLine();
+            System.out.print("Nome da Reserva: ");
+            String nomeCliente = sc.nextLine().trim();
 
-        boolean cancelar = chatService.removerReserva(nomeCliente);
+        LocalDate data;
+        while (true) {
+            System.out.print("Data da Reserva: ");
+            try {
+                data = LocalDate.parse(sc.nextLine());
+                break;
+            } catch (DateTimeParseException ex) {
+                System.out.println("Data invalida");
+            }
+        }
+
+        LocalTime horario;
+        while (true) {
+            System.out.print("Horario da Reserva: ");
+            try {
+                horario = LocalTime.parse(sc.nextLine());
+                break;
+            } catch (DateTimeParseException ex) {
+                System.out.println("Horario incorreto!");
+            }
+        }
+
+        boolean cancelar = chatService.removerReserva(nomeCliente, data, horario);
         if (cancelar) {
             IO.println("Cancelamento feito com sucesso!!");
         } else {
-            IO.println("Não encontrei uma reserva com esse nome!");
+            IO.println("Não encontrei uma reserva com esse dados!");
         }
     }
 
@@ -152,11 +177,12 @@ public class Main {
 
         List<Cliente> clientes = chatService.buscarPorNome(nomeCliente);
         if (clientes.isEmpty()) {
-            IO.println("Reserva nenhuma reserva encontrada nesse nome!");
+            IO.println("Nenhuma reserva encontrada nesse nome!");
         } else {
-            for (Cliente cliente : clientes) {
-                IO.println(cliente.toString());
-            }
+            System.out.print("\nForam encontrados " + clientes.size() + " reservas!");
+            System.out.println("\n===+=== Reserva do Cliente ===+===");
+            Comparator<Cliente> compararDia = Comparator.comparing(Cliente::getDia).thenComparing(Cliente::getHorario);
+            clientes.stream().sorted(compararDia).forEach(System.out::println);
         }
     }
 }

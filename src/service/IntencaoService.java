@@ -1,5 +1,4 @@
 package service;
-
 import model.Intencao;
 
 import java.util.LinkedHashMap;

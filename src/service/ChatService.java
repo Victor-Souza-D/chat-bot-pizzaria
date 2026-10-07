@@ -5,6 +5,7 @@ import model.Cliente;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ChatService {
@@ -20,9 +21,9 @@ public class ChatService {
                 .toList();
     }
 
-    private boolean remover;
-    public boolean removerReserva(String nomeCliente) {
-        return remover =  clientes.removeIf(cliente -> cliente.getNome().equalsIgnoreCase(nomeCliente));
+    public boolean removerReserva(String nomeCliente, LocalDate data, LocalTime horario) {
+        return clientes.removeIf(cliente -> cliente.getNome().equalsIgnoreCase(nomeCliente)
+                && cliente.getDia().equals(data) && cliente.getHorario().equals(horario));
     }
 
     public boolean existeAgendamento(LocalDate dia, LocalTime horario) {
