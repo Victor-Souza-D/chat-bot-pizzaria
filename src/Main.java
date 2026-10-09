@@ -5,7 +5,9 @@ import service.HorarioService;
 import service.IntencaoService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
@@ -63,7 +65,7 @@ public class Main {
         String nomeCliente;
         while (true) {
             System.out.print("Nome: ");
-            nomeCliente = sc.nextLine();
+            nomeCliente = sc.nextLine().trim();
 
             if (nomeCliente.trim().isEmpty()) {
                 System.out.println("O seu nome deve ter pelo menos um nome.");
@@ -73,21 +75,18 @@ public class Main {
         }
 
         LocalDate dia;
+        DateTimeFormatter formatoDia = DateTimeFormatter.ofPattern("dd/MM/yyyy"); // tranforma o
         while (true) {
             IO.print("Dia da Reserva: ");
             try {
-                dia = LocalDate.parse(sc.nextLine());
+                dia = LocalDate.parse(sc.nextLine(), formatoDia);
                 if (dia.isBefore(LocalDate.now())) {
                     IO.println("Data invalida");
                 } else {
-                    if (dia.getDayOfWeek() == SATURDAY || dia.getDayOfWeek() == SUNDAY) {
-                        System.out.println("Data invalida");
-                    } else {
-                        break;
-                    }
+                    break;
                 }
             } catch (DateTimeParseException e) {
-                IO.println("Dia incorreto!");
+                IO.println(e.getMessage());
             }
         }
 
@@ -99,7 +98,6 @@ public class Main {
 
                 boolean valido = horarioService.horarioValido(dia, horarioCliente);
                 if (valido) {
-
                 } else {
                     IO.println("Horário invalido");
                     continue;
@@ -110,7 +108,14 @@ public class Main {
                     System.out.println("Horário já existente... Por favor coloque outro horário!!");
                     continue;
                 }
+
+                LocalDateTime dateTime = LocalDateTime.of(dia, horarioCliente); // Verifica se o cliente tentar reservar no horario que ja passou.
+                if (dateTime.isBefore(LocalDateTime.now())) {
+                    System.out.println("ERRO>>>");
+                    continue;
+                }
                 break;
+
             } catch (DateTimeParseException ex) {
                 IO.println("Formato de horario incorreto!");
             }
@@ -142,10 +147,11 @@ public class Main {
             String nomeCliente = sc.nextLine().trim();
 
         LocalDate data;
+        DateTimeFormatter formatoDia = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         while (true) {
             System.out.print("Data da Reserva: ");
             try {
-                data = LocalDate.parse(sc.nextLine());
+                data = LocalDate.parse(sc.nextLine(), formatoDia);
                 break;
             } catch (DateTimeParseException ex) {
                 System.out.println("Data invalida");
@@ -172,8 +178,16 @@ public class Main {
     }
 
     public static void verReserva(Scanner sc, ChatService chatService) {
-        IO.print("Nome da Reserva: ");
-        String nomeCliente = sc.nextLine();
+        String nomeCliente;
+        while (true) {
+            System.out.print("Nome: ");
+            nomeCliente = sc.nextLine().trim();
+            if (nomeCliente.trim().isEmpty()) {
+                System.out.println("O seu nome deve ter pelo menos um nome.");
+            } else {
+                break;
+            }
+        }
 
         List<Cliente> clientes = chatService.buscarPorNome(nomeCliente);
         if (clientes.isEmpty()) {
